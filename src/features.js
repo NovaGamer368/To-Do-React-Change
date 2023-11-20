@@ -9,3 +9,4 @@ export default function featDisplay() {
     <li><img src=${check}> Clear all completed</li>
   `;
 }
+//Testing commits
