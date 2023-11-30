@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField';
 import Paper from '@mui/material/Paper';
 
 
-const QuotaInput = (taskList, setTasks) => {
+const QuotaInput = ({taskList, setTasks, update}) => {
 
     // {
     //     id: 0,
@@ -16,10 +16,10 @@ const QuotaInput = (taskList, setTasks) => {
     const [quota, setQuota] = useState()
 
     const addTask = () => {
-        let tempList = taskList.taskList
+        let tempList = taskList
         let newTask = 
         {
-            id: tempList.length,
+            id: tempList.length + 1,
             quota: quota,
             isComplete:false, 
             toggleComplete: function() {
@@ -27,7 +27,9 @@ const QuotaInput = (taskList, setTasks) => {
             }
         }
         tempList.push(newTask)
-        taskList.setTasks(tempList)
+        setTasks(tempList)
+        update()
+        // taskList.setTasks(tempList)
     }
 
     return (
