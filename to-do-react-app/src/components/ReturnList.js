@@ -10,6 +10,7 @@ import Paper from '@mui/material/Paper';
 import QuotaInput from './QuotaInput';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
+import UpdateQuota from './UpdateQuota';
 
 const ReturnList = () => {
     
@@ -29,18 +30,45 @@ const ReturnList = () => {
             this.isComplete = !this.isComplete
         }
     };
+    const savedList = JSON.parse(localStorage.getItem('toDoList'))
 
-    const [taskList, setTaskList] = useState([testTask,testTask2]);
-    const [checked, setChecked] = useState([]);
+    const [taskList, setTaskList] = useState([]);
+    const [checked, setChecked] = useState([]);    
+    const [isCompletedTasks, setIsCompletedTasks] = useState(false)
+    const [taskUpdate, setTaskUpdate] = useState(false);
+    const [editingTask, setEditingTask] = useState({})
+    const [, forceUpdate] = useReducer(x => x + 1, 0);
+
+    useEffect(() => {
+        if(savedList)
+        {
+            setTaskList(savedList)
+        }
+    }, [])
+
     useEffect(() => {
         console.log("reload")
+        localStorage.setItem('toDoList', JSON.stringify(taskList));
+        setIsCompletedTasks(false)
+        if(taskList)
+        {
+            taskList.forEach(task => {
+                if(task.isComplete == true)
+                {
+                    setIsCompletedTasks(true)
+                }
+            })
+        }   
         forceUpdate();
     }, [taskList])
 
-    const [, forceUpdate] = useReducer(x => x + 1, 0);
-
+    const toggleComplete = (task) => {
+        task.isComplete = !task.isComplete
+        return task
+    }
+    
     const handleToggle = (value) => () => {
-        value.toggleComplete()
+        value = toggleComplete(value)
         console.log(taskList)
         console.log(value)
         const currentIndex = checked.indexOf(value);
@@ -51,9 +79,59 @@ const ReturnList = () => {
         } else {
             newChecked.splice(currentIndex, 1);
         }
+
+        setIsCompletedTasks(false)
+        taskList.forEach(task => {
+            if(task.isComplete == true)
+            {
+                setIsCompletedTasks(true)
+            }
+        })
     
         setChecked(newChecked);
     };
+
+    const updateTask = (taskId) => {
+        console.log("UPDATING: ", taskId)
+    }
+
+    const deleteTask = (taskId) => {
+        let index = 0
+        let tempArray = taskList        
+
+        taskList.forEach(task => {    
+            console.log(index)
+            if(task.id === taskId)
+            {
+                tempArray.splice(index, 1);
+                setTaskList(tempArray);
+            }
+            index++
+
+            
+            forceUpdate();
+        });
+        setIsCompletedTasks(false)
+        taskList.forEach(task => {
+            if(task.isComplete == true)
+            {
+                setIsCompletedTasks(true)
+            }
+        })
+    }
+
+    const clearAllComplete = () => {
+        const updatedTaskList = taskList.filter(task => !task.isComplete)
+        setTaskList(updatedTaskList);
+        setIsCompletedTasks(false)
+        taskList.forEach(task => {
+            if(task.isComplete == true)
+            {
+                setIsCompletedTasks(true)
+            }
+        })
+        forceUpdate();
+    }
 
     return (
         <main>
@@ -64,73 +142,93 @@ const ReturnList = () => {
                             <a id="refresh"><i className="fas fa-sync-alt"></i></a>
                         </div>
                         <div className="form-container bottom">
-                            <QuotaInput taskList={taskList} setTasks={setTaskList} update={forceUpdate}/>
+                            <QuotaInput taskList={taskList} setTasks={setTaskList} update={forceUpdate} />
                         </div>
                         <div className='todo-list'>
                             <h3>Your tasks</h3>
+                            {
+                                taskList.length !== 0 ? 
                                 <List dense component="div" role="list">
-                                    {
+                                {
                                     taskList.map((task) => {
-                                    const labelId = `transfer-list-item-${task.id}-label`;
-                                    if(task.isComplete)
-                                    {
-                                        return (
-                                            <ListItem
-                                            key={task.id}
-                                            role="listitem"
-                                            button
-                                            >
-                                                <ListItemIcon>
-                                                    <Checkbox
-                                                    checked={checked.indexOf(task) !== -1}
-                                                    tabIndex={-1}
-                                                    disableRipple
-                                                    inputProps={{
-                                                        'aria-labelledby': labelId,
-                                                    }}
-                                                    style={{ color: "rgb(0, 128, 0)" }}
-                                                    onClick={handleToggle(task)}
-                                                    />
-                                                </ListItemIcon>
-                                                <ListItemText className='completedTask' id={task.id} primary={task.quota} />
-                                                <DeleteIcon />
-                                            </ListItem>
-                                        );
-                                    }
-                                    else
-                                    {
-                                        return (
-                                            <ListItem
-                                            key={task.id}
-                                            role="listitem"
-                                            button
-                                            >
-                                                <ListItemIcon>
-                                                    <Checkbox
-                                                    checked={checked.indexOf(task) !== -1}
-                                                    tabIndex={-1}
-                                                    disableRipple
-                                                    inputProps={{
-                                                        'aria-labelledby': labelId,
-                                                    }}
-                                                    onClick={handleToggle(task)}
-
-                                                    />
-                                                </ListItemIcon>
-                                                <ListItemText id={task.id} primary={task.quota} />
-                                                <MoreVertIcon onClick={() => {console.log("Click")}}/>
-                                            </ListItem>
-                                        );
-                                    }                                   
-                                    })}
-                                    <ListItem />
-                                </List>
+                                        const labelId = `transfer-list-item-${task.id}-label`;
+                                        if(task.isComplete)
+                                        {
+                                            return (
+                                                <ListItem
+                                                key={task.id}
+                                                role="listitem"
+                                                button
+                                                >
+                                                    <ListItemIcon>
+                                                        <Checkbox
+                                                        checked={checked.indexOf(task) !== -1}
+                                                        tabIndex={-1}
+                                                        disableRipple
+                                                        inputProps={{
+                                                            'aria-labelledby': labelId,
+                                                        }}
+                                                        style={{ color: "rgb(0, 128, 0)" }}
+                                                        onClick={handleToggle(task)}
+                                                        />
+                                                    </ListItemIcon>
+                                                    <ListItemText className='completedTask' id={task.id} primary={task.quota} />
+                                                    <DeleteIcon onClick={() => {deleteTask(task.id)}}/>
+                                                </ListItem>
+                                            );
+                                        }
+                                        else
+                                        {
+                                            if(taskUpdate && editingTask.id === task.id)
+                                            {
+                                                return (
+                                                    <UpdateQuota task={task} finshUpdating={setTaskUpdate} checked={checked} handleToggle={handleToggle} 
+                                                    editingTask={editingTask} taskList={taskList} setTaskList={setTaskList}/>
+                                                );
+                                            }
+                                            else
+                                            {
+                                                return (
+                                                    <ListItem
+                                                    key={task.id}
+                                                    role="listitem"
+                                                    button
+                                                    >
+                                                        <ListItemIcon>
+                                                            <Checkbox
+                                                            checked={checked.indexOf(task) !== -1}
+                                                            tabIndex={-1}
+                                                            disableRipple
+                                                            inputProps={{
+                                                                'aria-labelledby': labelId,
+                                                            }}
+                                                            onClick={handleToggle(task)}
+                                                            />
+                                                        </ListItemIcon>
+                                                        <ListItemText id={task.id} primary={task.quota} />
+                                                        <MoreVertIcon onClick={() => {setTaskUpdate(true); setEditingTask(task)}}/>
+                                                    </ListItem>
+                                                );
+                                            }
+                                        }                                   
+                                        })}
+                                        <ListItem />
+                                    </List>
+                                    :
+                                    <><h4>NO TASKS ENTERED</h4></>
+                            }
                         </div>
-                    </Paper>
-
-                    <div className="clear">
-                        {/* <a>Clear all completed</a> */}
-                    </div>
+                        <div className="clear">       
+                            {
+                                    isCompletedTasks ?
+                                    
+                                        <Button variant="contained" onClick={() => {clearAllComplete()}}>Clear all Completed</Button>
+                                        :
+                                        <Button variant="contained" disabled>Clear all Completed</Button>
+                                    
+                            }                
+                        </div>
+                    </Paper>                
                 </div>	
             </main>
     )

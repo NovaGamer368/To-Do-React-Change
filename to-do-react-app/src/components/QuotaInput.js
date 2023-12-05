@@ -17,17 +17,38 @@ const QuotaInput = ({taskList, setTasks, update}) => {
 
     const addTask = () => {
         let tempList = taskList
-        let newTask = 
+        let newTask = {}
+
+        if(taskList.length !== 0)
         {
-            id: tempList.length + 1,
-            quota: quota,
-            isComplete:false, 
-            toggleComplete: function() {
-                this.isComplete = !this.isComplete
+            console.log(tempList[tempList.length -1].id)
+            newTask = 
+            {
+                id: tempList[tempList.length -1].id + 1,
+                quota: quota,
+                isComplete: false, 
+                toggleComplete: function() {
+                    this.isComplete = !this.isComplete
+                }
             }
+            tempList.push(newTask)
+            setTasks(tempList)
+
         }
-        tempList.push(newTask)
-        setTasks(tempList)
+        else
+        {
+            newTask = 
+            {
+                id: 1,
+                quota: quota,
+                isComplete: false, 
+                toggleComplete: function() {
+                    this.isComplete = !this.isComplete
+                }
+            }
+            setTasks([newTask])
+        }
+        localStorage.setItem('toDoList', JSON.stringify(tempList));
         update()
         // taskList.setTasks(tempList)
     }
